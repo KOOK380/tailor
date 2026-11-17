@@ -1,0 +1,23 @@
+# Free hourly notification sweep — runs on GitHub Actions (no Vercel Pro needed).
+#
+# Setup (one-time, in GitHub):
+#   1. Settings → Secrets and variables → Actions → Secrets
+#      → New repository secret:  CRON_SECRET  (value from your .env.local)
+#   2. Same page → Variables tab → New variable:  APP_URL
+#      (your Vercel URL, e.g. https://tailor.vercel.app)
+name: Notification sweep
+
+on:
+  schedule:
+    - cron: "0 * * * *" # every hour
+  workflow_dispatch: {} # manual "Run workflow" button for testing
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger deadline check
+        run: |
+          curl -fsS -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ vars.APP_URL }}/api/cron/deadline-check"
